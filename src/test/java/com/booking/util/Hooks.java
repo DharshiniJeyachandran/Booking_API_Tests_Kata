@@ -19,8 +19,8 @@ public class Hooks {
     @Before(order = 0)
     public void createAuthToken(final Scenario scenario) {
         // Skip auth for scenarios that don’t need it
-        if (scenario.getSourceTagNames().contains("@noAuth")) {
-            LOG.info("Skipping auth for scenario (tagged @noAuth): " + scenario.getName());
+        if (scenario.getSourceTagNames().contains("@unauthenticated")) {
+            LOG.info("Skipping auth for scenario (tagged @unauthenticated): " + scenario.getName());
             return;
         }
 

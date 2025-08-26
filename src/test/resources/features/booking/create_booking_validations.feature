@@ -4,7 +4,7 @@ Feature: Create a room booking
   Background:
     Given the user has access to the booking endpoint "https://automationintesting.online/api/booking"
 
-  @createBooking @noAuth
+  @createBooking @unauthenticated
   Scenario Outline: Successfully create a booking with valid details
     When the user submits a reservation request with the following details:
       | roomid   | firstname   | lastname   | depositpaid | checkin    | checkout   | email                  | phone        |
@@ -23,7 +23,7 @@ Feature: Create a room booking
       | 2      | Kenji     | Tanaka    | false       | 2025-12-15  | 2025-12-20  | kenji.tanaka@test.com      | 55544455661  |
       | 3      | Maria     | Silva     | true        | 2026-01-05  | 2026-01-09  | maria.silva@test.com       | 55533311221  |
 
-  @createBooking @validationErrors @noAuth
+  @createBooking @validationErrors @unauthenticated
   Scenario Outline: Reject invalid payload with proper validation errors
     When the user tries to book a room with the following booking details
       | roomid   | firstname   | lastname   | depositpaid | checkin    | checkout   | email                  | phone         |

@@ -4,7 +4,7 @@ Feature: Send a contact message successfully
   Background:
     Given the user has access to the message endpoint "https://automationintesting.online/api/message"
 
-  @positive @noAuth
+  @submitMessage @unauthenticated
   Scenario Outline: Successfully send a contact message with valid details
     When the user submits a form with the following details:
       | name        | <name>        |

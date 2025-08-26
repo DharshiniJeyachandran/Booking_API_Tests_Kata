@@ -13,7 +13,8 @@ public class Configuration {
     private static final Properties PROPS = new Properties();
 
     static {
-        try (InputStream in = Configuration.class.getClassLoader().getResourceAsStream("application.properties")) {
+        try (InputStream in = Configuration.class.getClassLoader().
+                getResourceAsStream("application.properties")) {
             if (in == null) {
                 throw new RuntimeException("application.properties not found in classpath");
             }
