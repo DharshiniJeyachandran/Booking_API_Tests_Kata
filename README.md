@@ -1,7 +1,7 @@
 
 # Booking API Tests Kata
 
-Automated API testing using **Java 21**, **Maven**, **Cucumber (JUnit 5)** and **Rest Assured** for the public site
+Automated API testing using **Java 21**, **Maven**, **Cucumber (JUnit 5)** and **Rest Assured** for the  site
 [automationintesting.online](https://automationintesting.online).
 
 This suite covers three areas:
@@ -10,7 +10,6 @@ This suite covers three areas:
 - **Booking** — `/api/booking` (positive + validation errors)
 - **Message submission** — `/api/message`
 
----
 
 ## 📦 Tech & Requirements
 
@@ -48,27 +47,7 @@ repo/Booking_API_Tests_Kata-main
 └─ README.md
 ```
 
----
 
-## ⚙️ Configuration
-
-`src/test/resources/application.properties`
-
-```properties
-# Request configuration
-request.contentType=application/json
-
-# API base URL
-api.baseUrl=https://automationintesting.online
-
-# Authentication (only used when auth is enabled)
-auth.username=admin
-auth.password=password
-```
-
-> Tip: The features should prefer **base URL + path** (set in steps/hooks) instead of hard-coding the full URL, so you can change `api.baseUrl` without touching Gherkin.
-
----
 
 ## 🏷 Tags in this repo
 
@@ -100,13 +79,7 @@ mvn clean test
   ```bash
   mvn test -Dcucumber.filter.tags="@messageAPI"
   ```
-- **Only happy path:**
-  ```bash
-  mvn test -Dcucumber.filter.tags="@happyPath"
-  ```
-- **Only negative validations:**
-  ```bash
-  mvn test -Dcucumber.filter.tags="@negative"
+
   ```
 - **Only token validation:**
   ```bash
