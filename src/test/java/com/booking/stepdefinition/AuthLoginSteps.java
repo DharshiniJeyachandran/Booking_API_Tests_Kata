@@ -2,9 +2,7 @@ package com.booking.stepdefinition;
 
 import com.booking.util.BookingTestContext;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
+import io.cucumber.java.en.*;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.apache.log4j.LogManager;
@@ -23,6 +21,8 @@ public class AuthLoginSteps {
 
     private final BookingTestContext context;
     private Response response;
+
+    // ---------- Login ----------
 
     @Given("the user has access to the auth endpoint {string}")
     public void userHasAccessToAuthEndpoint(String endpoint) {
@@ -48,6 +48,13 @@ public class AuthLoginSteps {
                 .post(endpoint);
 
         context.session.put("lastResponse", response);
+
+        // Save token for later validation step if present
+        String token = response.jsonPath().getString("token");
+        if (token != null && !token.isBlank()) {
+            context.session.put("token", token);
+        }
+
         LOG.info("POST " + endpoint + " -> " + response.getStatusCode() + " " + response.asString());
     }
 
@@ -84,4 +91,105 @@ public class AuthLoginSteps {
                 .as("Expected error '%s' but got: %s", expected, r.asString())
                 .isEqualTo(expected);
     }
+
+    // ---------- Token validation ----------
+
+    @And("the user has access to the token validation endpoint {string}")
+    public void userHasAccessToValidationEndpoint(String endpoint) {
+        context.session.put("endpoint", endpoint);
+    }
+
+    @When("the client validates the login token")
+    public void validateLoginToken() {
+        String endpoint = Objects.toString(context.session.get("endpoint"), null);
+        assertThat(endpoint).isNotBlank();
+
+        String token = Objects.toString(context.session.get("token"), null);
+        assertThat(token).as("No token stored from login response").isNotBlank();
+
+        JSONObject body = new JSONObject().put("token", token);
+
+        response = context.requestSetup()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(body.toString())
+                .when()
+                .post(endpoint);
+
+        context.session.put("lastResponse", response);
+        LOG.info("POST " + endpoint + " -> " + response.getStatusCode() + " " + response.asString());
+    }
+
+    @When("the client validates a token:")
+    public void validateProvidedToken(DataTable table) {
+        String endpoint = Objects.toString(context.session.get("endpoint"), null);
+        assertThat(endpoint).isNotBlank();
+
+        Map<String, String> map = table.asMap(String.class, String.class);
+        String token = map.get("token"); // may be blank for negative case
+
+        JSONObject body = new JSONObject().put("token", token);
+
+        response = context.requestSetup()
+                .contentType("application/json")
+                .accept("application/json")
+                .body(body.toString())
+                .when()
+                .post(endpoint);
+
+        context.session.put("lastResponse", response);
+        LOG.info("POST " + endpoint + " -> " + response.getStatusCode() + " " + response.asString());
+    }
+
+    @Then("the token validation response status should be {int}")
+    public void tokenValidationStatusShouldBe(int expected) {
+        Response r = response != null ? response : (Response) context.session.get("lastResponse");
+        assertThat(r).as("No response captured").isNotNull();
+        assertThat(r.getStatusCode()).isEqualTo(expected);
+    }
+
+    @Then("the token should be reported as valid")
+    public void tokenShouldBeValid() {
+        Response r = response != null ? response : (Response) context.session.get("lastResponse");
+        assertThat(r).isNotNull();
+        Object v = r.jsonPath().get("valid");
+        boolean valid = Boolean.parseBoolean(String.valueOf(v));
+        assertThat(valid).as("Expected valid=true, body: %s", r.asString()).isTrue();
+    }
+
+    @Then("The the token validation should be rejected")
+    public void tokenValidationRejected() {
+        Response r = response != null ? response : (Response) context.session.get("lastResponse");
+        assertThat(r).isNotNull();
+
+        int status = r.getStatusCode();
+        // API may return 401 (Unauthorized) or 403 (Forbidden) for invalid/bad tokens
+        boolean isRejected = (status == 401) || (status == 403);
+        // Some APIs return 200 with {"valid": false}; accept that too
+        if (status == 200) {
+            Object v = r.jsonPath().get("valid");
+            boolean valid = Boolean.parseBoolean(String.valueOf(v));
+            isRejected = !valid;
+        }
+
+        assertThat(isRejected)
+                .as("Expected token validation to be rejected. Status=%s Body=%s",
+                        Integer.valueOf(status), r.asString())
+                .isTrue();
+    }
+
+    @Then("the token should be reported as invalid")
+    public void tokenShouldBeInvalid() {
+        Response r = response != null ? response : (Response) context.session.get("lastResponse");
+        assertThat(r).isNotNull();
+
+
+        Object v = r.jsonPath().get("valid");
+        boolean valid = Boolean.parseBoolean(String.valueOf(v));
+
+        assertThat(valid)
+                .as("Expected valid=false, body: %s", r.asString())
+                .isFalse();
+    }
+
 }
