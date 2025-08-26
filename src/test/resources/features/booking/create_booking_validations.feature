@@ -2,7 +2,7 @@
 Feature: Create a room booking
 
   Background:
-    Given the user has access to the booking endpoint "https://automationintesting.online/api/booking"
+    Given the user has access to the booking endpoint "/api/booking"
 
   @createBooking @unauthenticated
   Scenario Outline: Successfully create a booking with valid details

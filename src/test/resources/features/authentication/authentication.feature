@@ -2,9 +2,9 @@
 Feature: Authenticate with login endpoint
 
   Background:
-    Given the user has access to the auth endpoint "https://automationintesting.online/api/auth/login"
+    Given the user has access to the auth endpoint "/api/auth/login"
 
-  @happyPath @publicAPI
+  @login
   Scenario Outline: Successfully authenticate with valid credentials
     When the user submits login credentials:
       | username | <username> |
@@ -16,7 +16,7 @@ Feature: Authenticate with login endpoint
       | username | password |
       | admin    | password |
 
-  @happyPath @validate @publicAPI
+  @login @validate
   Scenario Outline: Validate the token received from a successful login
     # Login to obtain a token
     When the user submits login credentials:
@@ -35,7 +35,7 @@ Feature: Authenticate with login endpoint
       | username | password |
       | admin    | password |
 
-  @negative @publicAPI
+  @invalidLogin
   Scenario Outline: Reject login with invalid credentials
     When the user submits login credentials:
       | username | <username> |
@@ -49,7 +49,7 @@ Feature: Authenticate with login endpoint
       | admin    | wrongpwd | Invalid credentials |
       | wrongusr | password | Invalid credentials |
 
-  @negative @validate @publicAPI
+  @invalidToken @validate @publicAPI
   Scenario Outline: Report invalid token during validation
     And the user has access to the token validation endpoint "https://automationintesting.online/api/auth/validate"
     When the client validates a token:

@@ -1,55 +1,150 @@
-# Kata API Testing in Java
 
-API Testing and Java Exercise: Setting up a Basic API Test Automation Framework.
+# Booking API Tests Kata
 
-## Objective
-The objective of this exercise is to evaluate your knowledge on API testing and Java by setting up a basic API Test Automation framework using Rest-Assured and Cucumber. You will need to create a test suite that executes a few tests against one endpoint of a hotel booking website and evaluates their responses.
+Automated API testing using **Java 21**, **Maven**, **Cucumber (JUnit 5)** and **Rest Assured** for the public site
+[automationintesting.online](https://automationintesting.online).
 
-## Background
-The application under test is a simple hotel booking website where you can book a room and also send a form with a request.
+This suite covers three areas:
 
-The website can be accessed at https://automationintesting.online/.
+- **Authentication** — `/api/auth/login`, `/api/auth/validate`
+- **Booking** — `/api/booking` (positive + validation errors)
+- **Message submission** — `/api/message`
 
-The Swagger documentation for the two endpoints you will be testing can be found at:
+---
 
-Booking endpoint: https://automationintesting.online/booking/swagger-ui/index.html
-Optionally, you also have the Authentican endpoint: https://automationintesting.online/auth/swagger-ui/index.html
+## 📦 Tech & Requirements
 
-## Task
-You are provided with an extremely basic API test project.
+- Java 21
+- Maven 3.9+
+- Cucumber (Gherkin), JUnit Platform, Rest Assured, AssertJ, Log4j
 
-Please clone the project and create a new branch with your name. At the end, please push your branch to this project.
+---
 
-The project to start from, can be found here: https://github.com/freddyschoeters/API_Testing_kata
+## 📁 Project Structure
 
-Your task is to set up an API Test Automation framework from this project using Java, Rest-Assured, and Cucumber (feel free to add more dependencies if required).
+```
+repo/Booking_API_Tests_Kata-main
+├─ pom.xml
+├─ src
+│  └─ test
+│     ├─ java
+│     │  └─ com.booking
+│     │     ├─ runner/
+│     │     │  └─ TestRunner.java          # Cucumber runner (JUnit 5)
+│     │     ├─ stepdefinition/
+│     │     │  ├─ AuthLoginSteps.java      # login + token validate
+│     │     │  ├─ CreateBookingSteps.java  # create booking + validations
+│     │     │  └─ ContactMessageSteps.java # message submission
+│     │     └─ util/
+│     │        ├─ BookingTestContext.java  # shared session/spec builder
+│     │        ├─ Configuration.java       # simple classpath config loader
+│     │        └─ Hooks.java               # auth pre-hook (can be skipped)
+│     └─ resources
+│        ├─ features/
+│        │  ├─ authentication/authentication.feature
+│        │  ├─ booking/create_booking_validations.feature
+│        │  └─ booking/contact_message.feature
+│        └─ application.properties         # api.baseUrl etc.
+└─ README.md
+```
 
-It is up to you to define the test cases. You don’t need to have a full coverage, but you need to show enough variation on the types of tests that you would need to write and execute, and what to check in the response.
+---
 
-This kata has the purpose to evaluate both your technical skills as well as your testing skills.
+## ⚙️ Configuration
 
-`For this task, you will use the booking endpoint.`
+`src/test/resources/application.properties`
+
+```properties
+# Request configuration
+request.contentType=application/json
+
+# API base URL
+api.baseUrl=https://automationintesting.online
+
+# Authentication (only used when auth is enabled)
+auth.username=admin
+auth.password=password
+```
+
+> Tip: The features should prefer **base URL + path** (set in steps/hooks) instead of hard-coding the full URL, so you can change `api.baseUrl` without touching Gherkin.
+
+---
+
+## 🏷 Tags in this repo
 
 
-## Requirements
-* Use Java as the programming language
-* Use Rest-Assured as the API testing library
-* Use Cucumber as the BDD framework
-* Design your codebase using a proper Java design pattern
-* Write good tests with correct checks
-* Use Git for version control and push your codebase to an open GitHub repository
-* Make regular commits to demonstrate your progress
+
+```
+@auth, @bookingAPI, @createBooking, @createMessage, @createReservation, @gmail, @happyPath, @login, @messageAPI, @negative, @publicAPI, @submitMessage, @test, @unauthenticated, @validate, @validationErrors
+```
+
+---
+
+## ▶️ How to Run
+
+### Run everything (respecting runner's default tags)
+```bash
+mvn clean test
+```
+
+### Override tag filter from CLI (ignores @IncludeTags in runner)
+- **Only authentication (login + validate):**
+  ```bash
+  mvn test -Dcucumber.filter.tags="@auth"
+  ```
+- **Only booking:**
+  ```bash
+  mvn test -Dcucumber.filter.tags="@bookingAPI"
+  ```
+- **Only message submission:**
+  ```bash
+  mvn test -Dcucumber.filter.tags="@messageAPI"
+  ```
+- **Only happy path:**
+  ```bash
+  mvn test -Dcucumber.filter.tags="@happyPath"
+  ```
+- **Only negative validations:**
+  ```bash
+  mvn test -Dcucumber.filter.tags="@negative"
+  ```
+- **Only token validation:**
+  ```bash
+  mvn test -Dcucumber.filter.tags="@login and @validate"
+  ```
+
+> If the runner's `@IncludeTags` still interferes in your IDE, temporarily remove that
+annotation or keep the runner generic (no tag include) and filter via CLI only.
+
+---
+
+## ✍️ Feature Files
+
+### Authentication (`features/authentication/authentication.feature`)
+- **Login (happy path):** 200 and non-empty `token`
+- **Login (negative):** 401 with `error: Invalid credentials`
+- **Token validation:** validate token from login (valid=true) and invalid token flows
+
+### Booking (`features/booking/create_booking_validations.feature`)
+- **@createBooking @unauthenticated:** positive bookings via examples
+- **@validationErrors:** invalid payloads return 400; `Then the error messages should include "<expectedErrors>"`
+
+### Message Submission (`features/booking/contact_message.feature`)
+- **@createMessage @publicAPI @happyPath:** POST `/api/message` with `name,email,phone,subject,description` → `success: true`
+- **@negative:** invalid inputs assert specific validation error texts
 
 
-## Deliverables
-* Your branch pushed in the provided project.
-* A comprehensive test suite covering the scenarios mentioned above
-* A well-structured codebase with proper design patterns and comments
-* Regular commits demonstrating your progress
 
-## Evaluation Criteria
-* Being able to successfully run the tests
-* Correctness and completeness of the test suite
-* Quality of the codebase (design patterns, structure, code quality, …)
-* Use of Rest-Assured and Cucumber features
-* Commit history and progress demonstration
+## 📊 Reports
+
+
+
+Open the report after a run:
+```
+target/cucumber-report/cucumber.html
+```
+
+---
+
+
+Happy testing! 🧪

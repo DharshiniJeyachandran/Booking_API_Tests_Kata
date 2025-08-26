@@ -2,7 +2,7 @@
 Feature: Send a contact message successfully
 
   Background:
-    Given the user has access to the message endpoint "https://automationintesting.online/api/message"
+    Given the user has access to the message endpoint "/api/message"
 
   @submitMessage @unauthenticated
   Scenario Outline: Successfully send a contact message with valid details
