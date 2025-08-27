@@ -79,38 +79,39 @@ public class CreateBookingSteps {
 
     @Then("the error messages should include {string}")
     public void the_error_messages_should_include(String expectedErrors) {
-        Response r = (response != null) ? response : context.getLastResponse();
-        assertThat(r)
-                .as("No response captured. Ensure the When step called context.capture(response).")
-                .isNotNull();
+        Response responseToCheck = resolveResponse();
+        String errorOutput = extractErrors(responseToCheck);
 
-        String raw = r.asString();
-
-        String joined;
-        try {
-            java.util.List<String> errs = r.jsonPath().getList("errors", String.class);
-            joined = (errs != null && !errs.isEmpty()) ? String.join(", ", errs) : raw;
-        } catch (Exception e) {
-            joined = raw;
-        }
-
-        String haystack = joined.replaceAll("[\\[\\]\"]", "");
         for (String expected : expectedErrors.split(";")) {
-            String needle = expected.trim();
-            if (!needle.isEmpty()) {
-                assertThat(haystack)
-                        .as("Expected an error containing: \"%s\" but got: [%s]", needle, haystack)
-                        .contains(needle);
+            String trimmed = expected.trim();
+            if (!trimmed.isEmpty()) {
+                assertThat(errorOutput)
+                        .as("Expected an error containing: \"%s\" but got: [%s]", trimmed, errorOutput)
+                        .contains(trimmed);
             }
         }
     }
 
-    private static Object mapPlaceholder(String s) {
-        if (s == null) return "";
-        String t = s.trim();
-        if ("[null]".equalsIgnoreCase(t)) return JSONObject.NULL;
-        if ("[empty]".equalsIgnoreCase(t)) return "";
-        return s;
+    private Response resolveResponse() {
+        Response resolved = (response != null) ? response : context.getLastResponse();
+        assertThat(resolved)
+                .as("No response captured. Ensure the When step called context.capture(response).")
+                .isNotNull();
+        return resolved;
+    }
+
+    private String extractErrors(Response response) {
+
+            List<String> errors = response.jsonPath().getList("errors", String.class);
+            if (errors != null && !errors.isEmpty()) {
+                return String.join(", ", errors);
+            }
+
+        return response.asString().replaceAll("[\\[\\]\"]", "");
+    }
+
+    private static String mapPlaceholder(String value) {
+        return Objects.toString(value, "");
     }
 
     private static Object mapInt(String s) {
