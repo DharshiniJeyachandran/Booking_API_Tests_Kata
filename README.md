@@ -21,9 +21,9 @@ Hotel Booking Website: https://automationintesting.online
 
 Swagger Documentation:
 
-Booking endpoint: Swagger UI
+Booking endpoint: Swagger UI : https://automationintesting.online/booking/swagger-ui/index.html#/
 
-Authentication endpoint (optional): Swagger UI
+Authentication endpoint (optional): Swagger UI : https://automationintesting.online/auth/swagger-ui/index.html
 
 
 
