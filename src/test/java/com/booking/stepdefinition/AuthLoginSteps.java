@@ -165,13 +165,6 @@ public class AuthLoginSteps {
         int status = r.getStatusCode();
         // API may return 401 (Unauthorized) or 403 (Forbidden) for invalid/bad tokens
         boolean isRejected = (status == 401) || (status == 403);
-        // Some APIs return 200 with {"valid": false}; accept that too
-        if (status == 200) {
-            Object v = r.jsonPath().get("valid");
-            boolean valid = Boolean.parseBoolean(String.valueOf(v));
-            isRejected = !valid;
-        }
-
         assertThat(isRejected)
                 .as("Expected token validation to be rejected. Status=%s Body=%s",
                         Integer.valueOf(status), r.asString())
@@ -191,5 +184,4 @@ public class AuthLoginSteps {
                 .as("Expected valid=false, body: %s", r.asString())
                 .isFalse();
     }
-
 }

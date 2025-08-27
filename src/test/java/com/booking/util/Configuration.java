@@ -13,16 +13,21 @@ public class Configuration {
     private static final Properties PROPS = new Properties();
 
     static {
-        try (InputStream in = Configuration.class.getClassLoader().
-                getResourceAsStream("application.properties")) {
-            if (in == null) {
-                throw new RuntimeException("application.properties not found in classpath");
+        try (InputStream in = Configuration.class.getClassLoader()
+                .getResourceAsStream("application.properties")) {
+
+            if (in != null) {
+                PROPS.load(in);
+                LOG.info("Loaded application.properties");
+            } else {
+                String msg = "application.properties not found in classpath";
+                LOG.error(msg);
+                throw new IllegalStateException(msg);
             }
-            PROPS.load(in);
-            LOG.info("Loaded application.properties");
+
         } catch (IOException e) {
             LOG.error("Failed to load application.properties", e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Could not load application.properties", e);
         }
     }
 
@@ -31,11 +36,7 @@ public class Configuration {
     }
 
     public static String getProperty(String key) {
-        String value = PROPS.getProperty(key);
-        if (value == null) {
-            throw new IllegalArgumentException("Property not found: " + key);
-        }
-        return value.trim();
+       return PROPS.getProperty(key);
     }
 }
 

@@ -8,6 +8,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
@@ -16,53 +18,75 @@ public class Hooks {
     private static final Logger LOG = LogManager.getLogger(Hooks.class);
     private final BookingTestContext context;
 
+    // Tags that skip authentication
+    private static final Set<String> SKIP_AUTH_TAGS = Set.of("@unauthenticated");
+
     @Before(order = 0)
     public void createAuthToken(final Scenario scenario) {
-        // Skip auth for scenarios that don’t need it
-        if (scenario.getSourceTagNames().contains("@unauthenticated")) {
-            LOG.info("Skipping auth for scenario (tagged @unauthenticated): " + scenario.getName());
+        if (shouldSkipAuth(scenario)) {
+            LOG.info("Skipping auth for scenario (tagged to skip): " + scenario.getName());
             return;
         }
 
-        final String authPath = "/api/auth/login";
+        String username = requiredProp("auth.username");
+        String password = requiredProp("auth.password");
 
-        final String username = Configuration.getProperty("auth.username");
-        final String password = Configuration.getProperty("auth.password");
+        Response loginResponse = sendLoginRequest(username, password);
+        validateLoginResponse(loginResponse);
 
-        assertThat(username).as("Missing property 'username'").isNotNull().isNotBlank();
-        assertThat(password).as("Missing property 'password'").isNotNull().isNotBlank();
-
-        final JSONObject credentials = new JSONObject()
-                .put("username", username)
-                .put("password", password);
-
-        final Response authResponse = context.requestSetup()
-                .body(credentials.toString())
-                .when()
-                .post(authPath);
-
-        LOG.info("Auth status: " + authResponse.getStatusCode());
-        assertThat(authResponse.getStatusCode())
-                .as("Authentication failed. Body: %s", safeBody(authResponse))
-                .isEqualTo(200);
-
-        // Extract token from JSON body
-        final String token = authResponse.jsonPath().getString("token");
-
-        assertThat(token)
-                .as("No auth token retrieved. Body: %s", authResponse.asString())
-                .isNotNull()
-                .isNotBlank();
-
-        // Save into context for later requests
-        context.session.put("token", token);
-        context.session.put("Authorization", "Bearer " + token);
+        String authToken = extractAuthToken(loginResponse);
+        saveAuthToken(authToken);
 
         LOG.info("Stored token in context.session under keys: 'token' and 'Authorization'");
     }
 
-    private static String safeBody(Response r) {
-        try { return r == null ? "<null>" : r.asString(); }
-        catch (Exception e) { return "<unreadable: " + e.getMessage() + ">"; }
+    private boolean shouldSkipAuth(Scenario scenario) {
+        return scenario.getSourceTagNames().stream().anyMatch(SKIP_AUTH_TAGS::contains);
+    }
+
+    private String requiredProp(String key) {
+        String value = Configuration.getProperty(key);
+        assertThat(value).as("Missing property '%s'", key).isNotNull().isNotBlank();
+        return value.trim();
+    }
+
+    private Response sendLoginRequest(String username, String password) {
+        final String authPath = "/api/auth/login";
+        JSONObject credentialsJson = new JSONObject()
+                .put("username", username)
+                .put("password", password);
+
+        Response loginResponse = context.requestSetup()
+                .body(credentialsJson.toString())
+                .when()
+                .post(authPath);
+
+        LOG.info("Auth status: " + loginResponse.getStatusCode());
+        return loginResponse;
+    }
+
+    private void validateLoginResponse(Response loginResponse) {
+        assertThat(loginResponse).as("No login response").isNotNull();
+        assertThat(loginResponse.getStatusCode())
+                .as("Authentication failed. Body: %s", safeBody(loginResponse))
+                .isEqualTo(200);
+    }
+
+    private String extractAuthToken(Response loginResponse) {
+        String authToken = loginResponse.jsonPath().getString("token");
+        assertThat(authToken)
+                .as("No auth token retrieved. Body: %s", safeBody(loginResponse))
+                .isNotNull()
+                .isNotBlank();
+        return authToken;
+    }
+
+    private void saveAuthToken(String authToken) {
+        context.session.put("token", authToken);
+        context.session.put("Authorization", "Bearer " + authToken);
+    }
+
+    private static String safeBody(Response response) {
+        return response.asString();
     }
 }

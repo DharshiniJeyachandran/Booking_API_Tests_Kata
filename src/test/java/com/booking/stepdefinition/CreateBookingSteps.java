@@ -136,8 +136,9 @@ public class CreateBookingSteps {
      * Parse boolean when valid; if blank -> null; if invalid -> keep raw (to trigger validation).
      */
     private static Object mapBoolean(String s) {
-        if (s == null || s.isBlank()) return JSONObject.NULL;
+        if (s == null ) return JSONObject.NULL;
         String t = s.trim().toLowerCase();
+
         if ("true".equals(t)) return true;
         if ("false".equals(t)) return false;
         return s; // keep invalid string

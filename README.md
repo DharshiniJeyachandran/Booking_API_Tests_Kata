@@ -1,14 +1,30 @@
 
 # Booking API Tests Kata
 
-Automated API testing using **Java 21**, **Maven**, **Cucumber (JUnit 5)** and **Rest Assured** for the  site
-[automationintesting.online](https://automationintesting.online).
+Booking API Tests (Kata)
 
-This suite covers three areas:
+This project contains automated API tests for the Automation in Testing Room booking website
+, using Cucumber (BDD) and RestAssured.
 
-- **Authentication** — `/api/auth/login`, `/api/auth/validate`
-- **Booking** — `/api/booking` (positive + validation errors)
-- **Message submission** — `/api/message`
+The tests cover:
+
+Booking API – creating and validating room bookings.
+
+Message API – submitting contact forms.
+
+Authentication API – logging in and validating tokens.
+
+
+Application Under Test
+
+Hotel Booking Website: https://automationintesting.online
+
+Swagger Documentation:
+
+Booking endpoint: Swagger UI
+
+Authentication endpoint (optional): Swagger UI
+
 
 
 ## 📦 Tech & Requirements
@@ -18,6 +34,34 @@ This suite covers three areas:
 - Cucumber (Gherkin), JUnit Platform, Rest Assured, AssertJ, Log4j
 
 ---
+
+⚙️ Tech Stack
+
+Java – JDK 21
+
+Maven – build tool
+
+JUnit 5 – test runner
+
+Cucumber – BDD with Gherkin feature files
+
+RestAssured – REST API testing library
+
+AssertJ – fluent assertions
+
+------------------------------------------------------
+**Local Setup**
+
+Clone the below repository
+
+git clone https://github.com/DharshiniJeyachandran/Booking_API_Tests_Kata.git
+
+
+Import as Maven project
+
+Open your IDE (IntelliJ/Eclipse).
+
+Select Import Project → Maven → choose the cloned repo.
 
 ## 📁 Project Structure
 
@@ -48,17 +92,6 @@ repo/Booking_API_Tests_Kata-main
 ```
 
 
-
-## 🏷 Tags in this repo
-
-
-
-```
-@auth, @bookingAPI, @createBooking, @createMessage, @createReservation, @gmail, @happyPath, @login, @messageAPI, @negative, @publicAPI, @submitMessage, @test, @unauthenticated, @validate, @validationErrors
-```
-
----
-
 ## ▶️ How to Run
 
 ### Run everything (respecting runner's default tags)
@@ -66,45 +99,11 @@ repo/Booking_API_Tests_Kata-main
 mvn clean test
 ```
 
-### Override tag filter from CLI (ignores @IncludeTags in runner)
-- **Only authentication (login + validate):**
-  ```bash
-  mvn test -Dcucumber.filter.tags="@auth"
-  ```
-- **Only booking:**
-  ```bash
-  mvn test -Dcucumber.filter.tags="@bookingAPI"
-  ```
-- **Only message submission:**
-  ```bash
-  mvn test -Dcucumber.filter.tags="@messageAPI"
-  ```
-
-  ```
-- **Only token validation:**
-  ```bash
-  mvn test -Dcucumber.filter.tags="@login and @validate"
-  ```
-
-> If the runner's `@IncludeTags` still interferes in your IDE, temporarily remove that
-annotation or keep the runner generic (no tag include) and filter via CLI only.
-
----
-
 ## ✍️ Feature Files
 
 ### Authentication (`features/authentication/authentication.feature`)
-- **Login (happy path):** 200 and non-empty `token`
-- **Login (negative):** 401 with `error: Invalid credentials`
-- **Token validation:** validate token from login (valid=true) and invalid token flows
-
 ### Booking (`features/booking/create_booking_validations.feature`)
-- **@createBooking @unauthenticated:** positive bookings via examples
-- **@validationErrors:** invalid payloads return 400; `Then the error messages should include "<expectedErrors>"`
-
 ### Message Submission (`features/booking/contact_message.feature`)
-- **@createMessage @publicAPI @happyPath:** POST `/api/message` with `name,email,phone,subject,description` → `success: true`
-- **@negative:** invalid inputs assert specific validation error texts
 
 
 
@@ -118,6 +117,9 @@ target/cucumber-report/cucumber.html
 ```
 
 ---
-
+the recent latest report is inside the reports/latest
+```
+report/latest/cucumber.html
+```
 
 Happy testing! 🧪

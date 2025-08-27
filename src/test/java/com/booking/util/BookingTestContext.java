@@ -24,10 +24,6 @@ public class BookingTestContext {
 
 
     public final Map<String, Object> session = new ConcurrentHashMap<>();
-
-    /**
-     * Last HTTP response (if you want to read it in later steps).
-     */
     @Getter
     private volatile Response lastResponse;
 
@@ -40,25 +36,15 @@ public class BookingTestContext {
         final boolean curlLog = Boolean.parseBoolean(safeProp("curl.logging.enabled", "true"));
 
         RestAssured.reset();
-
         RestAssuredConfig config = curlLog
                 ? CurlRestAssuredConfigFactory.createConfig(Options.builder().logStacktrace().build())
                 : RestAssured.config();
-
         RestAssured.baseURI = baseUrl;
-
         RequestSpecification spec = given()
                 .log().all()
                 .config(config)
                 .contentType(contentType)
                 .accept(contentType);
-
-        // Auto-attach Authorization header if present in session
-        Object auth = session.get("Authorization");
-        if (auth != null) {
-            spec.header("Authorization", auth.toString());
-        }
-
         return spec;
     }
 
@@ -69,36 +55,8 @@ public class BookingTestContext {
         this.lastResponse = response;
     }
 
-
-    /**
-     * Preferred: pass in the response you got from login.
-     */
-    public Cookie retrieveAuthenticatedCookie(Response loginResponse) {
-        if (loginResponse == null) return null;
-        try {
-            Cookies cookies = loginResponse.detailedCookies();
-            if (cookies == null || cookies.asList().isEmpty()) return null;
-            Cookie token = cookies.get("token");                 // adjust name if different
-            return token != null ? token : cookies.asList().get(0);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-
-    @Deprecated
-    public Cookie retriveAuthenticatedCookie(Response loginResponse) { // note the legacy spelling
-        return retrieveAuthenticatedCookie(loginResponse);
-    }
-
-    /* --------------------------------------- util --------------------------------------- */
-
-    private static String safeProp(String key, String def) {
-        try {
-            String v = Configuration.getProperty(key);
-            return (v == null || v.isBlank()) ? def : v;
-        } catch (Throwable t) {
-            return def;
-        }
+    private static String safeProp(String key, String defaultValue) {
+        String val = Configuration.getProperty(key);
+        return val == null ? defaultValue : val;
     }
 }

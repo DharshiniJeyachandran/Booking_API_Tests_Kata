@@ -7,7 +7,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
 
 @Suite
 @IncludeEngines("cucumber")
-@IncludeTags({"bookingAPI","messageAPI","publicAPI"})
+@IncludeTags({"bookingAPI","messageAPI","authAPI"})
 @SelectPackages("com.booking")
 @SelectClasspathResource("features")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.booking")

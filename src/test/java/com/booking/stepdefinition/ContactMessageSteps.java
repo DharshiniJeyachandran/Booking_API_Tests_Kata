@@ -70,6 +70,6 @@ public class ContactMessageSteps {
 
 
     private static Object toJson(String s) {
-        return (s == null || s.isBlank()) ? JSONObject.NULL : s;
+        return s == null  ? JSONObject.NULL : s;
     }
 }

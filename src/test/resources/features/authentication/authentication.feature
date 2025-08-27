@@ -1,4 +1,4 @@
-@auth @login
+@authAPI @login
 Feature: Authenticate with login endpoint
 
   Background:
@@ -49,7 +49,7 @@ Feature: Authenticate with login endpoint
       | admin    | wrongpwd | Invalid credentials |
       | wrongusr | password | Invalid credentials |
 
-  @invalidToken @validate @publicAPI
+  @invalidToken @validate
   Scenario Outline: Report invalid token during validation
     And the user has access to the token validation endpoint "https://automationintesting.online/api/auth/validate"
     When the client validates a token:
