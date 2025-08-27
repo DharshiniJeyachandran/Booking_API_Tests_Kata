@@ -159,15 +159,15 @@ public class AuthLoginSteps {
 
     @Then("The the token validation should be rejected")
     public void tokenValidationRejected() {
-        Response r = response != null ? response : (Response) context.session.get("lastResponse");
-        assertThat(r).isNotNull();
+        Response response = (Response) context.session.get("lastResponse");
+        assertThat(response).isNotNull();
 
-        int status = r.getStatusCode();
+        int status = response.getStatusCode();
         // API may return 401 (Unauthorized) or 403 (Forbidden) for invalid/bad tokens
         boolean isRejected = (status == 401) || (status == 403);
         assertThat(isRejected)
                 .as("Expected token validation to be rejected. Status=%s Body=%s",
-                        Integer.valueOf(status), r.asString())
+                        Integer.valueOf(status), response.asString())
                 .isTrue();
     }
 

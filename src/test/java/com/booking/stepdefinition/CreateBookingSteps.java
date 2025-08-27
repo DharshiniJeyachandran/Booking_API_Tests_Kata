@@ -86,7 +86,6 @@ public class CreateBookingSteps {
 
         String raw = r.asString();
 
-        // If the API returns {"errors":[...]} join them; otherwise use raw body
         String joined;
         try {
             java.util.List<String> errs = r.jsonPath().getList("errors", String.class);
@@ -95,7 +94,6 @@ public class CreateBookingSteps {
             joined = raw;
         }
 
-        // Normalize minimal punctuation to make contains checks robust
         String haystack = joined.replaceAll("[\\[\\]\"]", "");
         for (String expected : expectedErrors.split(";")) {
             String needle = expected.trim();
@@ -107,40 +105,24 @@ public class CreateBookingSteps {
         }
     }
 
-    // ----------------- helpers -----------------
-
-    /**
-     * Map "[null]" -> JSON null, "[empty]" -> empty string, else original value (including empty/blank -> empty).
-     */
     private static Object mapPlaceholder(String s) {
         if (s == null) return "";
         String t = s.trim();
         if ("[null]".equalsIgnoreCase(t)) return JSONObject.NULL;
         if ("[empty]".equalsIgnoreCase(t)) return "";
-        return s; // keep exact value (including real blanks) so validators trigger properly
+        return s;
     }
 
-    /**
-     * Parse int when valid; if blank -> null; if invalid -> keep raw (to trigger validation).
-     */
     private static Object mapInt(String s) {
-        if (s == null || s.isBlank()) return JSONObject.NULL;
-        try {
-            return Integer.parseInt(s.trim());
-        } catch (NumberFormatException e) {
-            return s; // keep invalid string
-        }
+        if (s == null) return JSONObject.NULL;
+        return Integer.parseInt(s.trim());
     }
 
-    /**
-     * Parse boolean when valid; if blank -> null; if invalid -> keep raw (to trigger validation).
-     */
-    private static Object mapBoolean(String s) {
-        if (s == null ) return JSONObject.NULL;
-        String t = s.trim().toLowerCase();
 
-        if ("true".equals(t)) return true;
-        if ("false".equals(t)) return false;
-        return s; // keep invalid string
+    private static Object mapBoolean(String value) {
+        if (value == null) return JSONObject.NULL;
+        String normalized = value.trim().toLowerCase();
+        return "true".equals(normalized) ? Boolean.TRUE : Boolean.FALSE;
     }
+
 }
